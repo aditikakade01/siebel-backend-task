@@ -1,29 +1,13 @@
-from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
+from flask import Blueprint, render_template, request, jsonify
+from ..models import db, CaseSubmission
 
-app = Flask(__name__, template_folder='templates')
-CORS(app)
+case_bp = Blueprint('case_bp', __name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cases.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-class CaseSubmission(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    case_name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(250), nullable=False)
-
-with app.app_context():
-    db.create_all()
-
-@app.route('/')
+@case_bp.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html')   
 
-@app.route('/submit', methods=['POST'])
+@case_bp.route('/submit', methods=['POST'])
 def submit_form():
     try:
         data = request.get_json()
@@ -64,5 +48,3 @@ def submit_form():
     except Exception as e:
         return jsonify({'success': False, 'errors': {'general': str(e)}}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
